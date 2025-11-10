@@ -21,6 +21,8 @@ defmodule AlgoritmiWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/exams", ExamLive.List
+    live "/exams/create", ExamLive.Create
   end
 
   # Other scopes may use custom stacks.

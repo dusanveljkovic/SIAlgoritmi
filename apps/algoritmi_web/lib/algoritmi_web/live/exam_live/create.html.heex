@@ -1,0 +1,47 @@
+<div class="max-w-xl mx-auto p-6">
+  <h1 class="text-2xl font-semibold mb-6">Kreiraj rok</h1>
+
+  <.form
+    for={@form}
+    as={:exam}
+    id="exam-form"
+    phx-submit="save"
+    class="space-y-4"
+  >
+    <div>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Predmet</legend>
+        <select name="exam[subject]" class="select">
+          <option disabled selected value="">Izaberi predmet</option>
+          <option value="ASP1" selected={@form.data.subject == "ASP1"}>ASP1</option>
+          <option value="ASP2" selected={@form.data.subject == "ASP2"}>ASP2</option>
+        </select>
+      </fieldset>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">PDF roka</label>
+      <.live_file_input upload={@uploads.pdf} class="file-input file-input-primary"/>
+    </div>
+    <div>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Godina</legend>
+        <input type="number" min="2004" max="2025" step="1" name="exam[year]" value={@form.data.year} class="input"/>
+      </fieldset>
+    </div>
+    <div>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Ispitni rok</legend>
+        <select name="exam[term]" class="select">
+          <option disabled selected value="">Izaberi ispitni rok</option>
+          <%= for term <- ["K1", "K2", "K3", "Januar", "Februar", "Jun", "Jul"] do %>
+            <option value={term} selected={@form.data.term == term}><%= term %></option>
+          <% end %>
+        </select>
+      </fieldset>
+    </div>
+    <div class="pt-4">
+      <button type="submit" class="btn btn-primary">Sacuvaj</button>
+    </div>
+  </.form>
+</div>
