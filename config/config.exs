@@ -9,6 +9,19 @@
 # move said applications out of the umbrella.
 import Config
 
+config :algoritmi, :scopes,
+  user: [
+    default: true,
+    module: Algoritmi.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: Algoritmi.AccountsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 # Configure Mix tasks and generators
 config :algoritmi,
   ecto_repos: [Algoritmi.Repo]
