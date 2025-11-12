@@ -33,7 +33,12 @@ defmodule Algoritmi.Umbrella.MixProject do
   defp deps do
     [
       # Required to run "mix format" on ~H/.heex files from the umbrella root
-      {:phoenix_live_view, ">= 0.0.0"}
+      {:phoenix_live_view, ">= 0.0.0"},
+      {:ex_aws, "~> 2.4"},
+      {:ex_aws_s3, "~> 2.3"},
+      {:hackney, "~> 1.18"},
+      {:sweet_xml, "~> 0.7"},
+      {:mogrify, "~> 0.9.3"}
     ]
   end
 
