@@ -8,6 +8,10 @@ defmodule Algoritmi.Posts do
 
   alias Algoritmi.Posts.Exam
   alias Algoritmi.Accounts.Scope
+  alias Algoritmi.Posts.ExamImage
+
+  import Mogrify
+  import ExAws
 
   @doc """
   Subscribes to scoped notifications about any exam changes.
@@ -97,7 +101,7 @@ defmodule Algoritmi.Posts do
 
   """
   def update_exam(%Scope{} = scope, %Exam{} = exam, attrs) do
-    true = exam.user_id == scope.user.id
+    true = exam.uploader == scope.user.id
 
     with {:ok, exam = %Exam{}} <-
            exam
@@ -121,7 +125,7 @@ defmodule Algoritmi.Posts do
 
   """
   def delete_exam(%Scope{} = scope, %Exam{} = exam) do
-    true = exam.user_id == scope.user.id
+    true = exam.uploader == scope.user.id
 
     with {:ok, exam = %Exam{}} <-
            Repo.delete(exam) do
@@ -139,7 +143,84 @@ defmodule Algoritmi.Posts do
       %Ecto.Changeset{data: %Exam{}}
 
   """
-  def change_exam(%Exam{} = exam, attrs \\ %{}) do
-    Exam.changeset(exam, attrs)
+  def change_exam(%Scope{} = scope, %Exam{} = exam, attrs \\ %{}) do
+    Exam.changeset(exam, attrs, scope)
   end
+
+  def list_exam_images(%Exam{id: exam_id}) do
+    Repo.all_by(ExamImage, exam_id: exam_id)
+  end
+
+  def pdf_to_images(pdf_path) do
+    %{frame_count: page_count} = Mogrify.identify(pdf_path)
+
+    %{path: converted_path} = pdf_path
+    |> Mogrify.open()
+    |> Mogrify.format("png")
+    |> Mogrify.save()
+
+    base = Path.rootname(converted_path)
+    ext = Path.extname(converted_path)
+
+    for i <- 0..(page_count - 1) do
+      "#{base}-#{i}#{ext}" 
+    end
+  end
+
+  @bucket "sialgoritmi"
+
+  defp get_remote_name(image_path) do
+    "exam_images/#{Path.basename(image_path)}"
+  end
+
+  def upload_image(path) do
+    ExAws.S3.put_object(@bucket, get_remote_name(path), File.read!(path))
+    |> ExAws.request!
+  end
+
+  def upload_images(paths) do
+    paths
+    |> Task.async_stream(fn img -> upload_image(img) end, max_concurrency: 10)
+    |> Stream.run()
+  end
+  
+  def create_exam_images(%Exam{} = exam, pdf_path) do
+    png_paths = pdf_to_images(pdf_path)
+
+    upload_images(png_paths)
+
+    for {png_path, index} <- Enum.with_index(png_paths) do
+      %ExamImage{}
+      |> ExamImage.changeset(%{url: get_remote_name(png_path), page_number: index}, exam)
+      |> Repo.insert()
+    end
+  end
+
+  
+  # def update_exam(%Scope{} = scope, %Exam{} = exam, attrs) do
+  #   true = exam.uploader == scope.user.id
+  #
+  #   with {:ok, exam = %Exam{}} <-
+  #          exam
+  #          |> Exam.changeset(attrs, scope)
+  #          |> Repo.update() do
+  #     broadcast_exam(scope, {:updated, exam})
+  #     {:ok, exam}
+  #   end
+  # end
+  #
+  # def delete_exam_images(%Scope{} = scope, %Exam{} = exam) do
+  #   true = exam.uploader == scope.user.id
+  #
+  #   with {:ok, exam = %Exam{}} <-
+  #          Repo.delete(exam) do
+  #     broadcast_exam(scope, {:deleted, exam})
+  #     {:ok, exam}
+  #   end
+  # end
+  #
+  # def change_exam(%Scope{} = scope, %Exam{} = exam, attrs \\ %{}) do
+  #   Exam.changeset(scope, exam, attrs)
+  # end
+
 end

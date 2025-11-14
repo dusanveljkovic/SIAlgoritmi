@@ -10,6 +10,9 @@ defmodule Algoritmi.Accounts.User do
     field :confirmed_at, :naive_datetime
     field :authenticated_at, :naive_datetime, virtual: true
 
+    has_many :uploaded_exams, Algoritmi.Posts.Exam,
+      foreign_key: :uploaded_by
+
     timestamps()
   end
 

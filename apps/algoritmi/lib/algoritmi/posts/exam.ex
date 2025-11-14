@@ -2,6 +2,8 @@ defmodule Algoritmi.Posts.Exam do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Algoritmi.Accounts.Scope
+
   schema "exams" do
     field :subject, :string
     field :year, :integer
@@ -18,10 +20,11 @@ defmodule Algoritmi.Posts.Exam do
   end
 
   @doc false
-  def changeset(exam, attrs) do
+  def changeset(exam, attrs, %Scope{user: user}) do
     exam
     |> cast(attrs, [:subject, :year, :term, :description])
     |> validate_required([:subject, :year, :term])
+    |> put_assoc(:uploader, user)
     |> validate_number(:year, greater_than: 2003, less_than: 2026)
     |> validate_inclusion(:subject, ["ASP1", "ASP2"])
     |> validate_inclusion(:term, ["K1", "K2", "K3", "Januar", "Februar", "Jun", "Jul"])

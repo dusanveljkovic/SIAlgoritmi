@@ -20,9 +20,13 @@ defmodule AlgoritmiWeb.Router do
   scope "/", AlgoritmiWeb do
     pipe_through :browser
 
+    live_session :logged_user,
+      on_mount: [{AlgoritmiWeb.UserAuth, :mount_current_scope}] do
+      live "/exams", ExamLive.List
+      live "/exams/create", ExamLive.Create
+    end
+
     get "/", PageController, :home
-    live "/exams", ExamLive.List
-    live "/exams/create", ExamLive.Create
   end
 
   # Other scopes may use custom stacks.
