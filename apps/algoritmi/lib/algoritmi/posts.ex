@@ -9,6 +9,7 @@ defmodule Algoritmi.Posts do
   alias Algoritmi.Posts.Exam
   alias Algoritmi.Accounts.Scope
   alias Algoritmi.Posts.ExamImage
+  alias Algoritmi.RemoteStorage
 
   import Mogrify
   import ExAws
@@ -45,7 +46,10 @@ defmodule Algoritmi.Posts do
 
   """
   def list_exams() do
-    Repo.all(Exam)
+    query = 
+      from e in Exam,
+        preload: [images: ^from(i in ExamImage, order_by: [asc: i.page_number], limit: 1)]
+    Repo.all(query)
   end
 
   @doc """
@@ -85,6 +89,14 @@ defmodule Algoritmi.Posts do
            |> Repo.insert() do
       broadcast_exam(scope, {:created, exam})
       {:ok, exam}
+    end
+  end
+
+  def create_exam_images(image_paths, %Exam{} = exam) do
+    for {img_path, index} <- Enum.with_index(image_paths) do
+      %ExamImage{}
+      |> ExamImage.changeset(%{url: img_path, page_number: index}, exam)
+      |> Repo.insert()
     end
   end
 
@@ -151,50 +163,6 @@ defmodule Algoritmi.Posts do
     Repo.all_by(ExamImage, exam_id: exam_id)
   end
 
-  def pdf_to_images(pdf_path) do
-    %{frame_count: page_count} = Mogrify.identify(pdf_path)
-
-    %{path: converted_path} = pdf_path
-    |> Mogrify.open()
-    |> Mogrify.format("png")
-    |> Mogrify.save()
-
-    base = Path.rootname(converted_path)
-    ext = Path.extname(converted_path)
-
-    for i <- 0..(page_count - 1) do
-      "#{base}-#{i}#{ext}" 
-    end
-  end
-
-  @bucket "sialgoritmi"
-
-  defp get_remote_name(image_path) do
-    "exam_images/#{Path.basename(image_path)}"
-  end
-
-  def upload_image(path) do
-    ExAws.S3.put_object(@bucket, get_remote_name(path), File.read!(path))
-    |> ExAws.request!
-  end
-
-  def upload_images(paths) do
-    paths
-    |> Task.async_stream(fn img -> upload_image(img) end, max_concurrency: 10)
-    |> Stream.run()
-  end
-  
-  def create_exam_images(%Exam{} = exam, pdf_path) do
-    png_paths = pdf_to_images(pdf_path)
-
-    upload_images(png_paths)
-
-    for {png_path, index} <- Enum.with_index(png_paths) do
-      %ExamImage{}
-      |> ExamImage.changeset(%{url: get_remote_name(png_path), page_number: index}, exam)
-      |> Repo.insert()
-    end
-  end
 
   
   # def update_exam(%Scope{} = scope, %Exam{} = exam, attrs) do

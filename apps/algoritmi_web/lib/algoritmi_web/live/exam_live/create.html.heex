@@ -6,6 +6,7 @@
     as={:exam}
     id="exam-form"
     phx-submit="save"
+    phx-change="change"
     class="space-y-4"
   >
     <div>
@@ -22,7 +23,6 @@
     <div>
       <label class="block text-sm font-medium mb-1">PDF roka</label>
       <.live_file_input upload={@uploads.pdf} class="file-input file-input-primary"/>
-      <button class="btn" phx-click="test-upload">Test</button>
     </div>
     <div>
       <fieldset class="fieldset">

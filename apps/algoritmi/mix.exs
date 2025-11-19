@@ -43,7 +43,12 @@ defmodule Algoritmi.MixProject do
       {:ecto_sqlite3, ">= 0.0.0"},
       {:jason, "~> 1.2"},
       {:swoosh, "~> 1.16"},
-      {:req, "~> 0.5"}
+      {:req, "~> 0.5"},
+      {:ex_aws, "~> 2.4"},
+      {:ex_aws_s3, "~> 2.3"},
+      {:hackney, "~> 1.18"},
+      {:sweet_xml, "~> 0.7"},
+      {:mogrify, "~> 0.9.3"}
     ]
   end
 

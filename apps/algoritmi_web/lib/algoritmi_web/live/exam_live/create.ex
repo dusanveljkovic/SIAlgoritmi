@@ -4,6 +4,7 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   alias Algoritmi.Posts
   alias Algoritmi.Posts.Exam
+  alias Algoritmi.RemoteStorage
 
   @impl true
   def mount(_params, _session, socket) do
@@ -14,11 +15,32 @@ defmodule AlgoritmiWeb.ExamLive.Create do
   end
 
   @impl true
-  def handle_event("test-upload", _params, socket) do
-    consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
-      Posts.create_exam_images(Posts.get_exam!(1), path)
-        end)
-    {:noreply, assign(socket, uploaded_images: )}
+  def handle_event("save", %{"exam" => exam}, socket) do
+    case Posts.create_exam(socket.assigns.current_scope, exam) do
+      {:ok, exam} -> 
+        generate_exam_images(socket) 
+        |> Posts.create_exam_images(exam) 
+        {:noreply,
+          socket
+          |> redirect(to: ~p"/exams")}
+
+      {:error, changeset} -> 
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
+  def handle_event("change", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def generate_exam_images(socket) do
+    consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
+      images = 
+        path
+        |> RemoteStorage.pdf_to_images()
+        |> RemoteStorage.dev_upload()
+      {:ok, images} 
+    end)
+    |> List.flatten()
+  end
 end

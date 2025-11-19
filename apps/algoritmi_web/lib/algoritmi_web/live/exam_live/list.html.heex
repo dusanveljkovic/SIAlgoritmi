@@ -1,1 +1,12 @@
-<p>CAO</p>
+<%= for exam <- @exams do %>
+<div class="card bg-base-100 w-96 shadow-sm">
+  <div class="card-body">
+    <h2 class="card-title"><%= "#{exam.year} | #{exam.term}" %></h2>
+  </div>
+  <figure>
+    <img
+      src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+      alt="Shoes" />
+  </figure>
+</div>
+<% end %>

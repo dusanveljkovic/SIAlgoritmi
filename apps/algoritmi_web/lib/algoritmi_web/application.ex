@@ -12,7 +12,8 @@ defmodule AlgoritmiWeb.Application do
       # Start a worker by calling: AlgoritmiWeb.Worker.start_link(arg)
       # {AlgoritmiWeb.Worker, arg},
       # Start to serve requests, typically the last entry
-      AlgoritmiWeb.Endpoint
+      AlgoritmiWeb.Endpoint,
+      {Task.Supervisor, name: AlgoritmiWeb.TaskSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
