@@ -2,11 +2,13 @@ defmodule Algoritmi.Posts.ExamImage do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Algoritmi.Posts.Exam
+  alias Algoritmi.RemoteStorage
 
   schema "exam_images" do
     field :url, :string
     field :page_number, :integer
+
+    field :local_path, :string, virtual: true
 
     belongs_to :exam, Algoritmi.Posts.Exam
 
@@ -14,11 +16,19 @@ defmodule Algoritmi.Posts.ExamImage do
   end
 
   @doc false
-  def changeset(exam_image, attrs, %Exam{} = exam) do
+  def changeset(exam_image, attrs) do
     exam_image
-    |> cast(attrs, [:url, :page_number])
-    |> validate_required([:url, :page_number])
-    |> put_assoc(:exam, exam)
+    |> cast(attrs, [:url, :page_number, :local_path])
+    |> validate_required([:page_number])
     |> validate_number(:page_number, greater_than_or_equal_to: 0)
+    |> get_url()
+  end
+
+  defp get_url(changeset) do
+    if local_path = get_field(changeset, :local_path) do
+      put_change(changeset, :url, RemoteStorage.generate_url(local_path, "exam_images")) 
+    else
+      changeset
+    end
   end
 end

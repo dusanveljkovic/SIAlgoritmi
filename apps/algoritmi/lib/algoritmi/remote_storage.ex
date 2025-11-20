@@ -2,6 +2,8 @@ defmodule Algoritmi.RemoteStorage do
   import Mogrify
   import ExAws
 
+  alias Algoritmi.Posts.ExamImage
+
   @bucket "sialgoritmi"
 
   @doc """
@@ -21,7 +23,7 @@ defmodule Algoritmi.RemoteStorage do
   """
   def upload_images(paths, name_f) do
     paths
-    |> Task.async_stream(&upload_image(&1, name_f), max_concurrency: 10)
+    |> Task.async_stream(&upload_image(&1, name_f), max_concurrency: 10, ordered: true)
     |> Enum.map(fn {:ok, val} -> val end)
   end
 
@@ -29,24 +31,6 @@ defmodule Algoritmi.RemoteStorage do
     upload_images(paths, fn x -> "dev/#{Path.basename(x)}" end)
   end
 
-  @doc """
-  Converts each page of a pdf to a separate image and returns the list of paths to them
-  """
-  def pdf_to_images(pdf_path) do
-    %{frame_count: page_count} = Mogrify.identify(pdf_path)
-
-    %{path: converted_path} = pdf_path
-    |> Mogrify.open()
-    |> Mogrify.format("png")
-    |> Mogrify.save()
-
-    base = Path.rootname(converted_path)
-    ext = Path.extname(converted_path)
-
-    for i <- 0..(page_count - 1) do
-      "#{base}-#{i}#{ext}" 
-    end
-  end
 
   def base_url do
     "https://minio.dusanveljkovic.com/#{@bucket}"
@@ -54,6 +38,10 @@ defmodule Algoritmi.RemoteStorage do
 
   def temp_upload(path) do
     "temp/#{Path.basename(path)}"
+  end
+
+  def generate_url(path, folder) do
+    "#{folder}/#{Path.basename(path)}"
   end
 
   

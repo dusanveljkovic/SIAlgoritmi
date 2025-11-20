@@ -12,7 +12,6 @@ defmodule Algoritmi.Posts do
   alias Algoritmi.RemoteStorage
 
   import Mogrify
-  import ExAws
 
   @doc """
   Subscribes to scoped notifications about any exam changes.
@@ -48,7 +47,8 @@ defmodule Algoritmi.Posts do
   def list_exams() do
     query = 
       from e in Exam,
-        preload: [images: ^from(i in ExamImage, order_by: [asc: i.page_number], limit: 1)]
+        as: :exam,
+        preload: [:images]
     Repo.all(query)
   end
 
@@ -92,13 +92,7 @@ defmodule Algoritmi.Posts do
     end
   end
 
-  def create_exam_images(image_paths, %Exam{} = exam) do
-    for {img_path, index} <- Enum.with_index(image_paths) do
-      %ExamImage{}
-      |> ExamImage.changeset(%{url: img_path, page_number: index}, exam)
-      |> Repo.insert()
-    end
-  end
+
 
   @doc """
   Updates a exam.

@@ -16,10 +16,15 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   @impl true
   def handle_event("save", %{"exam" => exam}, socket) do
-    case Posts.create_exam(socket.assigns.current_scope, exam) do
-      {:ok, exam} -> 
-        generate_exam_images(socket) 
-        |> Posts.create_exam_images(exam) 
+    pdf_path = consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
+      File.cp!(path, "#{path}.pdf")
+      {:ok, "#{path}.pdf"} 
+    end) 
+    |> List.flatten() 
+    |> List.first()
+    IO.inspect(pdf_path)
+    case Posts.create_exam(socket.assigns.current_scope, Map.put(exam, "pdf_path", pdf_path)) do
+      {:ok, _exam} -> 
         {:noreply,
           socket
           |> redirect(to: ~p"/exams")}
@@ -31,16 +36,5 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   def handle_event("change", _params, socket) do
     {:noreply, socket}
-  end
-
-  def generate_exam_images(socket) do
-    consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
-      images = 
-        path
-        |> RemoteStorage.pdf_to_images()
-        |> RemoteStorage.dev_upload()
-      {:ok, images} 
-    end)
-    |> List.flatten()
   end
 end
