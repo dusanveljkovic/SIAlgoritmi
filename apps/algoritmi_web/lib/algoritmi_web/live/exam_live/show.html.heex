@@ -1,4 +1,26 @@
-<h1><%= "#{@exam.subject}|#{@exam.term}|#{@exam.year}" %></h1>
-<%= for %{url: partial_link} <- @exam.images do %>
-  <img src={Algoritmi.RemoteStorage.full_url(partial_link)} />
-<% end %>
+<div class="flex flex-col items-center justify-center">
+  <div class="rounded-md rounded-md inset-shadow-sm p-4" phx-hook="ResizeCarousel" id="id">
+    <div class="flex justify-between font-inter py-3 text-lg font-semibold tracking-wider">
+      <button class="btn btn-outline btn-primary"><%= @exam.subject %></button>
+      <button class="btn btn-outline btn-primary"><%= @exam.term %></button>
+      <button class="btn btn-outline btn-primary"><%= @exam.year %></button>
+    </div>
+
+    <div id="full-carousel">
+      <div class="carousel rounded-box">
+        <%= for %{url: partial_link, page_number: page} <- @exam.images do %>
+          <div class="carousel-item" id={"page-#{page}"}}>
+            <img src={Algoritmi.RemoteStorage.full_url(partial_link)} class=""/>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex w-full justify-center gap-2 py-2">
+        <%= for %{page_number: page} <- @exam.images do %>
+          <a href={"#page-#{page}"} class="btn btn-xs"><%= page + 1 %></a>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+</div>
