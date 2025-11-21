@@ -4,7 +4,6 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   alias Algoritmi.Posts
   alias Algoritmi.Posts.Exam
-  alias Algoritmi.RemoteStorage
 
   @impl true
   def mount(_params, _session, socket) do
@@ -16,18 +15,12 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   @impl true
   def handle_event("save", %{"exam" => exam}, socket) do
-    pdf_path = consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
-      File.cp!(path, "#{path}.pdf")
-      {:ok, "#{path}.pdf"} 
-    end) 
-    |> List.flatten() 
-    |> List.first()
-    IO.inspect(pdf_path)
+    pdf_path = extract_pdf_path(socket)
     case Posts.create_exam(socket.assigns.current_scope, Map.put(exam, "pdf_path", pdf_path)) do
-      {:ok, _exam} -> 
+      {:ok, exam} -> 
         {:noreply,
           socket
-          |> redirect(to: ~p"/exams")}
+          |> redirect(to: ~p"/exams/#{exam.id}")}
 
       {:error, changeset} -> 
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -36,5 +29,14 @@ defmodule AlgoritmiWeb.ExamLive.Create do
 
   def handle_event("change", _params, socket) do
     {:noreply, socket}
+  end
+
+  defp extract_pdf_path(socket) do
+    consume_uploaded_entries(socket, :pdf, fn %{path: path}, _entry -> 
+      File.cp!(path, "#{path}.pdf")
+      {:ok, "#{path}.pdf"} 
+    end) 
+    |> List.flatten() 
+    |> List.first()
   end
 end

@@ -41,6 +41,7 @@ defmodule Algoritmi.Posts.Exam do
       %ExamImage{}
       |> ExamImage.changeset(%{local_path: img_path, page_number: index})
       |> apply_changes()
+      |> ExamImage.upload()
     end
 
     put_assoc(changeset, :images, exam_images)

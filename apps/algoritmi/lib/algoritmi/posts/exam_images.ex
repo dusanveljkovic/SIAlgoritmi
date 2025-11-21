@@ -31,4 +31,9 @@ defmodule Algoritmi.Posts.ExamImage do
       changeset
     end
   end
+
+  def upload(%{local_path: local_path, url: url} = exam_image) do
+    RemoteStorage.upload_image(local_path, url)
+    exam_image
+  end
 end

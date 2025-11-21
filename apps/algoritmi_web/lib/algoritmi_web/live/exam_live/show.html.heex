@@ -1,0 +1,4 @@
+<h1><%= "#{@exam.subject}|#{@exam.term}|#{@exam.year}" %></h1>
+<%= for %{url: partial_link} <- @exam.images do %>
+  <img src={Algoritmi.RemoteStorage.full_url(partial_link)} />
+<% end %>

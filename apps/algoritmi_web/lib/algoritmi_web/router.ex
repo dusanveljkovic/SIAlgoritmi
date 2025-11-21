@@ -24,6 +24,8 @@ defmodule AlgoritmiWeb.Router do
       on_mount: [{AlgoritmiWeb.UserAuth, :mount_current_scope}] do
       live "/exams", ExamLive.List
       live "/exams/create", ExamLive.Create
+      live "/exams/:exam_id", ExamLive.Show
+      live "/exams/:exam_id/edit", ExamLive.Edit
     end
 
     get "/", PageController, :home

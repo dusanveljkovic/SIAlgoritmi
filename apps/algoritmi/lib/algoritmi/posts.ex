@@ -70,6 +70,11 @@ defmodule Algoritmi.Posts do
     Repo.get_by!(Exam, id: id)
   end
 
+  def get_exam(id) do
+    Repo.get_by(Exam, id: id)
+    |> Repo.preload(:images)
+  end
+
   @doc """
   Creates a exam.
 
