@@ -1,12 +1,29 @@
-<%= for exam <- @exams do %>
-<div class="card bg-base-100 w-96 shadow-sm">
-  <div class="card-body">
-    <h2 class="card-title"><%= "#{exam.year} | #{exam.term}" %></h2>
-  </div>
-  <figure>
-    <img
-      src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-      alt="Shoes" />
-  </figure>
+<div class="flex justify-center">
+<ul class="list bg-base-100 rouded-box shadow-md w-1/2 p-4">
+  <li class="flex flex-col gap-4 mb-4">
+    <p class="text-lg tracking-wide">Lista svih ispita i kolokvijuma</p>
+    <div class="flex gap-1">
+        <.filter_button 
+        text="Predmet" 
+        field="subject" 
+        options={Algoritmi.Posts.Exam.valid_subjects()}
+        selected={@filters.subject}/>
+        <.filter_button 
+        text="Rok" 
+        field="term" 
+        options={Algoritmi.Posts.Exam.valid_terms()}
+        selected={@filters.term}/>
+    </div>
+  </li>
+  <%= for exam <- @visible do %>
+  <li class="list-row flex justify-between items-center">
+    <div class="flex gap-x-3 font-normal">
+      <span><%= exam.subject %></span>
+      <span><%= exam.term %></span>
+      <span><%= exam.year %></span>
+    </div>
+    <.link navigate={~p"/exams/#{exam.id}"} class="btn btn-sm btn-primary px-8">Vidi</.link>
+  </li>
+  <% end %>
+</ul>
 </div>
-<% end %>

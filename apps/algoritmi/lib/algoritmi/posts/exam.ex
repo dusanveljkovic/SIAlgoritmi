@@ -22,6 +22,23 @@ defmodule Algoritmi.Posts.Exam do
     timestamps()
   end
 
+  def valid_subjects do
+    ["ASP1", "ASP2"]
+  end
+
+  def valid_terms do
+    ["K1", "K2", "K3", "Januar", "Februar", "Jun", "Jul"]
+  end
+
+  def get_filterable do
+    %{subject: valid_subjects(),
+      term: valid_terms()} 
+  end
+
+  def empty_filter do
+    %{subject: [], term: []}
+  end
+
   @doc false
   def changeset(exam, attrs, %Scope{user: user}) do
     exam
@@ -29,8 +46,8 @@ defmodule Algoritmi.Posts.Exam do
     |> validate_required([:subject, :year, :term, :pdf_path])
     |> put_assoc(:uploader, user)
     |> validate_number(:year, greater_than: 2003, less_than: 2026)
-    |> validate_inclusion(:subject, ["ASP1", "ASP2"])
-    |> validate_inclusion(:term, ["K1", "K2", "K3", "Januar", "Februar", "Jun", "Jul"])
+    |> validate_inclusion(:subject, valid_subjects())
+    |> validate_inclusion(:term, valid_terms())
     |> prepare_changes(&create_images/1)
   end
 

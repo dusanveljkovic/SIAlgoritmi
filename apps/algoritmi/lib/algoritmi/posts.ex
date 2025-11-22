@@ -9,9 +9,6 @@ defmodule Algoritmi.Posts do
   alias Algoritmi.Posts.Exam
   alias Algoritmi.Accounts.Scope
   alias Algoritmi.Posts.ExamImage
-  alias Algoritmi.RemoteStorage
-
-  import Mogrify
 
   @doc """
   Subscribes to scoped notifications about any exam changes.
@@ -35,22 +32,10 @@ defmodule Algoritmi.Posts do
     Phoenix.PubSub.broadcast(Algoritmi.PubSub, "user:#{key}:exams", message)
   end
 
-  @doc """
-  Returns the list of exams.
-
-  ## Examples
-
-      iex> list_exams(scope)
-      [%Exam{}, ...]
-
-  """
   def list_exams() do
-    query = 
-      from e in Exam,
-        as: :exam,
-        preload: [:images]
-    Repo.all(query)
+    Repo.all(Exam)
   end
+
 
   @doc """
   Gets a single exam.
